@@ -11,6 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using ClientNetAPI.Repositories;
+using Microsoft.Extensions.Options;
+using ClientNetAPI.Repositories.Net;
 
 namespace ClientNetAPI
 {
@@ -27,6 +30,21 @@ namespace ClientNetAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+
+            services.Configure<DatabaseSettings>(
+                Configuration.GetSection(nameof(DatabaseSettings)));
+            services.AddSingleton<IDatabaseSettings>(sp => (
+                sp.GetRequiredService<IOptions<DatabaseSettings>>().Value
+                
+                ));
+            services.AddSingleton<SqlServerConnectionProvider>();
+
+            services.AddSingleton<IClientNetServise, ClientNetService>();
+            services.AddSingleton<IClientRepository, ClientRepository>();
+            services.AddSingleton<INetRepository, NetRepository>();
+
+            services.AddSingleton<ClientRepository>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "ClientNetAPI", Version = "v1"});
